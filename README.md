@@ -1,34 +1,87 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# MailSender
 
-## Getting Started
+基于 [NodeMailer](https://github.com/nodemailer/nodemailer/), 提供邮件发送服务．
 
-First, run the development server:
+## API
 
-```bash
-npm run dev
-# or
-yarn dev
+发送邮件：
+
+```
+POST /api/hello
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+数据格式 JSON，例如：
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+```
+{
+    "to": "someone@gmail.com",
+    "subject": "中午好",
+    "text": "问候！"
+}
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+身份验证通过在 HTTP Header 添加特定字段：
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```
+x-auth-secret: yourSecret
+```
 
-## Learn More
+来实现．
 
-To learn more about Next.js, take a look at the following resources:
+实例：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+curl -X POST \
+--header 'Content-Type: application/json' \
+--header 'x-auth-secret: B22DC315E2Z72031' \
+-d @mailData.json https://mailsender-five.vercel.app/api/hello
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+返回值类型 `application/json`，格式：
 
-## Deploy on Vercel
+```
+interface ISendReceipt {
+    date: string | number;
+    messageId: string | undefined;
+    previewUrl: string | false;
+    to: string;
+    subject: string;
+    digest: string;
+};
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+{
+    receipt: ISendReceipt,
+    receipt2: ISendReceipt
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 部署方式
+
+Clone 这个仓库，然后：
+
+```
+cd mailsender
+
+echo -n "EMAIL_USERNAME=you@somedomain.com
+NICKNAME=Bunny
+EMAIL_PASSWORD=passwordOfYourEmailAccount
+EMAIL_HOST=mail.somedomain.com
+SECRET=secret
+" > .env
+```
+
+然后：
+
+```
+npm i 
+```
+
+然后：
+
+```
+npx next build
+npx next start
+```
+
+即可．
+
